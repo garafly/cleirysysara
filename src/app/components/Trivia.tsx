@@ -2,142 +2,145 @@
 
 import { useState } from 'react';
 
+type Player = 'Sara' | 'Cleirys';
+
 const saraQuestions = [
-  "1.What's Alba’s favorite food?",
-  "2.What's Alba’s dream vacation spot?",
-  "3.If Alba could have a superpower, what would it be?",
-  "4.What's Alba’s favorite movie?",
-  "5.What's her favorite season?",
-  "6.What’s a hobby Alba secretly wants to try?",
-  "7.If Alba had a million dollars, what’s the first thing she’d buy?",
-  "8.What’s Alba’s biggest fear?",
-  "9.What’s her go-to karaoke song?",
-  "10.What makes Alba laugh the hardest?",
+  "1.¿Cuál es la comida favorita de Cleirys?",
+  "3.¿Cuál es el destino de vacaciones soñado de Cleirys?",
+  "5.Si Cleirys pudiera tener un superpoder, ¿cuál sería?",
+  "7.¿Cuál es la película favorita de Cleirys?",
+  "9.¿Besitos lentos y suaves o rápidos y pasionales?",
+  "11.¿Si pudiera adquirir cualquier habilidad instantáneamente, cuál quisiera Cleirys?",
+  "13.Si Cleirys tuviera un millón de dólares, ¿qué sería lo primero que compraría?",
+  "15.¿Cuál es el mayor sueño de Cleirys?",
+  "17.¿Cuál es su canción favorita para cantar en karaoke?",
+  "19.¿Qué es lo que más le hace reír a Cleirys?",
 ];
 
-const albaQuestions = [
-  "1.What's Sara’s favorite food?",
-  "2.What's Sara’s dream vacation spot?",
-  "3.If Sara could have a superpower, what would it be?",
-  "4.What's Alba’s favorite movie?",
-  "5.What's her favorite season?",
-  "6.What’s a hobby Sara secretly wants to try?",
-  "7.If Sara had a million dollars, what’s the first thing she’d buy?",
-  "8.What’s Sara’s biggest fear?",
-  "9.What’s her go-to karaoke song?",
-  "10.What makes Sara laugh the hardest?",
+const cleyQuestions = [
+  "2.¿Cuál es la comida favorita de Sara?",
+  "4.¿Cuál es el destino de vacaciones soñado de Sara?",
+  "6.Si Sara pudiera tener un superpoder, ¿cuál sería?",
+  "8.¿Cuál es la película favorita de Sara?",
+  "10.¿Besitos lentos y suaves o rápidos y pasionales?",
+  "12.¿Si pudiera adquirir cualquier habilidad instantáneamente, cuál quisiera Sara?",
+  "14.Si Sara tuviera un millón de dólares, ¿qué sería lo primero que compraría?",
+  "16.¿Cuál es el mayor sueño de Sara?",
+  "18.¿Cuál es su canción favorita para cantar en karaoke?",
+  "20.¿Qué es lo que más le hace reír a Sara?",
 ];
 
 type TriviaProps = {
-    onAddPoint: (player: 'Sara' | 'Alba') => void;
-    onClose: () => void;
+  onAddPoint: (player: Player) => void;
+  onWin: (player: Player) => void;
+  onClose: () => void;
+};
+
+const Trivia = ({ onAddPoint, onWin, onClose }: TriviaProps) => {
+  const [questionIndex, setQuestionIndex] = useState(0);
+
+  const isGameOver = questionIndex >= 20;
+  const isSaraTurn = questionIndex % 2 === 0;
+  const currentPlayer: Player = isSaraTurn ? 'Sara' : 'Cleirys';
+  const displayIndex = Math.floor(questionIndex / 2);
+  const questions = isSaraTurn ? saraQuestions : cleyQuestions;
+
+  const handleNext = () => {
+    if (!isGameOver) {
+      setQuestionIndex((prev) => prev + 1);
+    }
   };
-  
-  const Trivia = ({ onAddPoint, onClose }: TriviaProps) => {
-    const [questionIndex, setQuestionIndex] = useState(0);
-    const [winnerSelected, setWinnerSelected] = useState<string | null>(null);
-  
-    const isGameOver = questionIndex >= 20;
-    const isSaraTurn = questionIndex < 10;
-    const currentPlayer = isSaraTurn ? 'Sara' : 'Alba';
-    const questions = isSaraTurn ? saraQuestions : albaQuestions;
-    const displayIndex = isSaraTurn ? questionIndex : questionIndex - 10;
-  
-    const handleNext = () => {
-      if (!isGameOver) setQuestionIndex((prev) => prev + 1);
-    };
-  
-    const handlePrevious = () => {
-      if (questionIndex > 0) setQuestionIndex((prev) => prev - 1);
-    };
-  
-    const handleSelectWinner = (player: 'Alba' | 'Sara') => {
-      onAddPoint(player);
-      setWinnerSelected(player);
-    };
-  
-    return (
-      <div className="bg-white/90 p-6 rounded-xl shadow-lg max-w-xl w-95 h-80 relative">
-        {/* Top-left close button */}
+
+  const handlePrevious = () => {
+    if (questionIndex > 0) {
+      setQuestionIndex((prev) => prev - 1);
+    }
+  };
+
+  const handleSelectWinner = (player: Player) => {
+    onWin(player);
+  };
+
+  return (
+    <div className="bg-white/95 p-6 rounded-xl shadow-lg max-w-xl w-95 h-80 mb-92 relative">
+      {/* Botón cerrar */}
+      <button
+        onClick={onClose}
+        className="absolute top-4 left-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-3 py-1 rounded-full text-sm shadow"
+      >
+        ←
+      </button>
+
+      {/* Botón agregar punto */}
+      {!isGameOver && (
         <button
-          onClick={onClose}
-          className="absolute top-4 left-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-3 py-1 rounded-full text-sm shadow"
+          onClick={() => onAddPoint(currentPlayer)}
+          className="absolute top-4 right-4 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm shadow flex items-center gap-1"
         >
-          ←
+          ➕ 1 punto
         </button>
-  
-        {/* Header */}
-        <h2 className="text-2xl font-bold mb-4 text-center">
-          {winnerSelected ? 'Recompensa:' : isGameOver ? 'Final Round!' : `${currentPlayer}’s turn!`}
-        </h2>
-  
-        {/* Body */}
-        <div className="text-center text-lg text-gray-800 mb-6 min-h-[80px] flex items-center justify-center">
-          {winnerSelected ? (
-            <span className="text-2xl font-semibold text-pink-600">
-              You get to pick the next place we are going! 💕
-            </span>
-          ) : isGameOver ? (
-            <span className="text-3xl font-bold text-purple-700">Who won???</span>
-          ) : (
-            questions[displayIndex]
-          )}
-        </div>
-  
-        {/* Bottom buttons */}
-        {!winnerSelected && (
-          <div className="flex justify-between mt-6">
-            {isGameOver ? (
-              <>
-                <button
-                  onClick={() => handleSelectWinner('Alba')}
-                  className="flex-1 mx-2 px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
-                >
-                  Alba
-                </button>
-                <button
-                  onClick={() => handleSelectWinner('Sara')}
-                  className="flex-1 mx-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-                >
-                  Sara
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  onClick={handlePrevious}
-                  disabled={questionIndex === 0}
-                  className={`px-4 py-2 rounded ${
-                    questionIndex === 0
-                      ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                      : 'bg-purple-600 text-white hover:bg-purple-700'
-                  }`}
-                >
-                  Previous Question
-                </button>
-  
-                <button
-                  onClick={handleNext}
-                  className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-                >
-                  Next Question
-                </button>
-              </>
-            )}
-          </div>
-        )}
-  
-        {/* +1 point (hidden when winner is selected) */}
-        {!isGameOver && !winnerSelected && (
-          <button
-            onClick={() => onAddPoint(currentPlayer as 'Sara' | 'Alba')}
-            className="absolute top-4 right-4 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1 shadow"
-          >
-            ➕ 1 point
-          </button>
-        )}
+      )}
+
+      {/* Título */}
+      <h2
+        className={`text-2xl font-bold mt-10 text-center ${
+          isGameOver ? 'text-green-600' : isSaraTurn ? 'text-pink-600' : 'text-cyan-600'
+        }`}
+      >
+        {isGameOver ? '¡Juego terminado!' : `Turno de ${currentPlayer} adivinar`}
+      </h2>
+
+      {/* Pregunta */}
+      <div className="text-center text-lg text-gray-800 mt-2 mb-4 min-h-[130px] flex items-center justify-center border border-gray-300 rounded">
+        {isGameOver ? '¿Quién ganó?' : questions[displayIndex]}
       </div>
-    );
-  };
-  
-  export default Trivia;
+
+      {/* Botones de navegación */}
+      {!isGameOver && (
+        <div className="flex justify-between mt-6">
+          <button
+            onClick={handlePrevious}
+            disabled={questionIndex === 0}
+            className={`px-4 py-2 rounded ${
+              questionIndex === 0
+                ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                : 'bg-indigo-400 text-white hover:bg-purple-700'
+            }`}
+          >
+            Pregunta Anterior
+          </button>
+
+          <button
+            onClick={handleNext}
+            className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
+            Próxima Pregunta
+          </button>
+        </div>
+      )}
+
+      {/* Seleccionar ganador */}
+      {isGameOver && (
+        <div className="flex flex-col gap-4 mt-6">
+
+          <div className="flex justify-between">
+            <button
+              onClick={() => handleSelectWinner('Cleirys')}
+              className="flex-1 mx-2 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600"
+            >
+              Cleirys
+            </button>
+            <button
+              onClick={() => handleSelectWinner('Sara')}
+              className="flex-1 mx-2 px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
+            >
+              Sara
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default Trivia;

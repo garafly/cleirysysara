@@ -2,48 +2,50 @@
 
 import { useState } from 'react';
 
+type Player = 'Sara' | 'Cleirys';
+
 type EmojiMovieProps = {
-  onAddPoint: (player: 'Sara' | 'Alba') => void;
+  onAddPoint: (player: Player) => void;
   onClose: () => void;
+  onWin: (player: Player) => void;
+  rewards: string[];
+  usedRewards: boolean[];
+  setUsedRewards: (newUsedRewards: boolean[]) => void;
 };
 
+const EmojiMovie = ({ onAddPoint, onClose, onWin }: EmojiMovieProps) => {
 
-const EmojiMovie = ({ onAddPoint, onClose }: EmojiMovieProps) => {
-  const [round, setRound] = useState(0);
-  const [winnerSelected, setWinnerSelected] = useState<string | null>(null);
-  const [showAnswer, setShowAnswer] = useState(false);
   const [customEmoji, setCustomEmoji] = useState('');
+  const [messages, setMessages] = useState<string[]>([]);
+  const [round, setRound] = useState(0);
 
   const isGameOver = round >= 10;
   const isSaraTurn = round % 2 === 0;
-  const currentPlayer = isSaraTurn ? 'Sara' : 'Alba';
+  const currentPlayer: Player = isSaraTurn ? 'Sara' : 'Cleirys';
 
-
+  const handleSend = () => {
+    if (customEmoji.trim() !== '' && messages.length < 3) {
+      setMessages((prev) => [...prev, `${currentPlayer}: ${customEmoji.trim()}`]);
+      setCustomEmoji('');
+    }
+  };
 
   const handleNext = () => {
     if (!isGameOver) {
+      setCustomEmoji('');
+      setMessages([]);
       setRound((prev) => prev + 1);
-      setShowAnswer(false);
-      setCustomEmoji('');
     }
   };
 
-  const handlePrevious = () => {
-    if (round > 0) {
-      setRound((prev) => prev - 1);
-      setShowAnswer(false);
-      setCustomEmoji('');
-    }
-  };
-
-  const handleSelectWinner = (player: 'Sara' | 'Alba') => {
+  const handleSelectWinner = (player: Player) => {
     onAddPoint(player);
-    setWinnerSelected(player);
+    onWin(player); // 🔥 Notifica a Home que debe cambiar a "Recompensa"
   };
 
   return (
-    <div className="bg-white/90 p-6 rounded-xl shadow-lg max-w-xl w-full relative">
-      {/* Back to board */}
+    <div className="bg-white/95 p-6 rounded-xl shadow-lg max-w-xl w-95 h-auto relative mb-55 flex flex-col">
+      {/* Botón cerrar */}
       <button
         onClick={onClose}
         className="absolute top-4 left-4 bg-gray-300 hover:bg-gray-400 text-gray-800 px-3 py-1 rounded-full text-sm shadow"
@@ -51,105 +53,100 @@ const EmojiMovie = ({ onAddPoint, onClose }: EmojiMovieProps) => {
         ←
       </button>
 
-      {/* +1 Point */}
-      {!isGameOver && !winnerSelected && (
+      {/* +1 punto */}
+      {!isGameOver && (
         <button
-          onClick={() => onAddPoint(isSaraTurn ? 'Alba' : 'Sara')}
+          onClick={() => onAddPoint(currentPlayer)}
           className="absolute top-4 right-4 bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded-full text-sm flex items-center gap-1 shadow"
         >
-          ➕ 1 point
+          ➕ 1 punto
         </button>
       )}
 
-      {/* Header */}
-      <h2 className="text-2xl font-bold mb-4 text-center">
-        {winnerSelected ? 'Recompensa:' : isGameOver ? 'Final Round!' : `${currentPlayer}’s turn!`}
+      {/* Título */}
+      <h2
+        className={`text-xl font-bold text-center mb-2 mt-6 ${
+          isGameOver ? 'text-green-600' : isSaraTurn ? 'text-pink-600' : 'text-cyan-600'
+        }`}
+      >
+        {isGameOver ? '¡Juego terminado!' : `Turno de ${currentPlayer} adivinar`}
       </h2>
 
-      {/* Body */}
-      <div className="text-center text-base text-gray-800 mb-4 min-h-[80px] flex flex-col items-center justify-center gap-3">
-        {winnerSelected ? (
-          <span className="text-xl font-semibold text-pink-600">
-            El ganador puede dar una orden leve... que se cumpla en 5 minutos.! 💕
-          </span>
-        ) : isGameOver ? (
-          <span className="text-3xl font-bold text-purple-700">Who won???</span>
-        ) : (
-          <>
-            <p className="text-sm text-gray-600 text-center">
-              <span className="block font-medium text-purple-700 mb-1">
-                Turn {round + 1} of 10
-              </span>
-              Tell a movie with emojis and the other person guesses it!
-            </p>
+      {/* Área de mensajes */}
+      {!isGameOver && (
+        <div className="border border-gray-300 rounded p-4 overflow-y-auto mb-4 bg-white h-32">
+          {messages.length === 0 ? (
+            <p className="text-gray-400 text-center">No hay emojis enviados aún.</p>
+          ) : (
+            messages.map((msg, index) => (
+              <div key={index} className="mb-2 text-gray-800">
+                {index + 1}. {msg}
+              </div>
+            ))
+          )}
+        </div>
+      )}
 
+      {/* Input y cuerpo */}
+      {!isGameOver && (
+        <div className="text-center text-base text-gray-800 mb-4 min-h-[80px] flex flex-col items-center justify-center gap-3">
+          <p className="text-md text-gray-600 text-center w-90">
+            Describe una película usando emojis y la otra persona debe adivinarla.
+          </p>
+
+          <div className="flex gap-2">
             <input
               type="text"
-              placeholder="Type emojis here..."
+              placeholder="🏁 Listo para enviar…"
               value={customEmoji}
               onChange={(e) => setCustomEmoji(e.target.value)}
-              className="text-2xl text-center bg-gray-100 rounded px-4 py-2 w-full max-w-sm"
+              className="text-2xl text-center border border-slate-600 rounded px-4 py-2 w-full max-w-sm"
             />
+            <button
+              onClick={handleSend}
+              disabled={customEmoji.trim() === '' || messages.length >= 3}
+              className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded disabled:bg-gray-400"
+            >
+              Enviar
+            </button>
+          </div>
 
-            {customEmoji && (
-              <>
-                <button
-                  onClick={() => setShowAnswer(true)}
-                  className="text-sm text-blue-600 underline hover:text-blue-800"
-                >
-                  Answer:
-                </button>
-                {showAnswer && (
-                  <div className="text-purple-700 font-semibold text-lg">
-                
-                  </div>
-                )}
-              </>
-            )}
-          </>
-        )}
-      </div>
+          <p className="text-sm text-gray-500 mt-2">
+            Te quedan {3 - messages.length} intentos este turno.
+          </p>
+        </div>
+      )}
 
-      {/* Bottom buttons */}
-      {!winnerSelected && (
+      {/* Botones de navegación */}
+      {!isGameOver && (
         <div className="flex justify-between mt-6">
-          {isGameOver ? (
-            <>
-              <button
-                onClick={() => handleSelectWinner('Alba')}
-                className="flex-1 mx-2 px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
-              >
-                Alba
-              </button>
-              <button
-                onClick={() => handleSelectWinner('Sara')}
-                className="flex-1 mx-2 px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600"
-              >
-                Sara
-              </button>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={handlePrevious}
-                disabled={round === 0}
-                className={`px-4 py-2 rounded ${
-                  round === 0
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                    : 'bg-purple-600 text-white hover:bg-purple-700'
-                }`}
-              >
-                Previous Turn
-              </button>
+          <button
+            onClick={handleNext}
+            className="w-full px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
+          >
+            Próximo turno
+          </button>
+        </div>
+      )}
 
-              <button
-                onClick={handleNext}
-                className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700"
-              >
-                Next Turn
-              </button>
-            </>
-          )}
+      {/* Elegir ganador */}
+      {isGameOver && (
+        <div className="flex flex-col gap-4 mt-6">
+          <p className="text-center text-lg text-gray-700">¿Quién ganó?</p>
+          <div className="flex justify-between">
+            <button
+              onClick={() => handleSelectWinner('Cleirys')}
+              className="flex-1 mx-2 px-4 py-2 bg-cyan-500 text-white rounded hover:bg-cyan-600"
+            >
+              Cleirys
+            </button>
+            <button
+              onClick={() => handleSelectWinner('Sara')}
+              className="flex-1 mx-2 px-4 py-2 bg-pink-500 text-white rounded hover:bg-pink-600"
+            >
+              Sara
+            </button>
+          </div>
         </div>
       )}
     </div>

@@ -1,28 +1,35 @@
 'use client';
 
-
 type ScoreBoardProps = {
-    albaScore: number;
-    saraScore: number;
-  };
-  
-  const PlayerScore = ({ name, score }: { name: string; score: number }) => {
-    return (
-      <div className="flex flex-col items-center bg-white/80 p-4 rounded-xl shadow-md w-40">
-        <h2 className="text-lg font-bold mb-2">{name}</h2>
-        <div className="text-4xl font-semibold text-purple-700">{score}</div>
+  cleyScore: number;
+  saraScore: number;
+};
+
+const PlayerScore = ({ name, score, bgImage }: { name: string; score: number; bgImage: string }) => {
+  return (
+    <div>
+      <h2 className="text-lg font-semibold text-center tracking-widest">{name}</h2>
+      <div
+        className={`flex flex-col items-center bg-contain bg-bottom bg-no-repeat w-40`}
+        style={{ backgroundImage: `url(${bgImage})` }}
+      >
+        <div className="text-4xl font-semibold text-zinc-50 pb-10">{score}</div>
       </div>
-    );
-  };
-  
-  const ScoreBoard = ({ albaScore, saraScore }: ScoreBoardProps) => {
-    return (
-      <div className="flex gap-6 justify-center items-center mt-6">
-        <PlayerScore name="Alba" score={albaScore} />
-        <PlayerScore name="Sara" score={saraScore} />
+    </div>
+  );
+};
+
+const ScoreBoard = ({ cleyScore, saraScore }: ScoreBoardProps) => {
+  return (
+    <div className="flex justify-start align-top bg-[url(/img/scoreBoard_&.png)] bg-contain bg-no-repeat bg-center ">
+      <div className="flex gap-6 justify-center items-center mt-2">
+        <PlayerScore name="Cleirys" score={cleyScore} bgImage="/img/blue.png" />
       </div>
-    );
-  };
-  
-  export default ScoreBoard;
-  
+      <div className="flex gap-6 justify-center items-center mt-2">
+        <PlayerScore name="Sara" score={saraScore} bgImage="/img/red.png" />
+      </div>
+    </div>
+  );
+};
+
+export default ScoreBoard;
